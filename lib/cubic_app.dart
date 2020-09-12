@@ -9,18 +9,22 @@ class CubicApp extends StatefulWidget {
 class _CubicAppState extends State<CubicApp>
     with SingleTickerProviderStateMixin {
   AnimationController _animationController;
-  static const double maxSlide = 200.0;
+  Animation animation;
+  static const double height = 200.0;
 
   @override
   void initState() {
     super.initState();
     _animationController =
-        AnimationController(vsync: this, duration: Duration(seconds: 1));
+        AnimationController(vsync: this, duration: Duration(seconds: 2));
+    animation = Tween(begin: 0.0, end: math.pi / 2).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticInOut),
+    );
   }
 
   void onTap() {
     _animationController.value == 0
-        ? _animationController.forward()
+        ? _animationController.animateTo(1.0)
         : _animationController.reverse();
   }
 
@@ -36,49 +40,45 @@ class _CubicAppState extends State<CubicApp>
           builder: (context, _) {
             return Stack(
               children: [
-                // Red cube
-                Transform.translate(
-                  offset: Offset(-maxSlide * _animationController.value, 0),
-                  child: Transform(
-                    transform: Matrix4.identity()
-                      ..setEntry(3, 2, 0.001)
-                      ..rotateY(-math.pi / 2 * _animationController.value),
-                    alignment: Alignment.centerRight,
-                    child: GestureDetector(
+                // Red Box
+                Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.001)
+                    ..translate(
+                      (math.cos(animation.value) * (height / 2)),
+                      0.0,
+                      (-(height / 2) * math.sin(animation.value)),
+                    )
+                    ..rotateY(-(math.pi / 2) + animation.value),
+                  child: Container(
+                    child: Center(
+                        child: GestureDetector(
                       child: redBox,
                       onTap: onTap,
-                    ),
+                    )),
                   ),
                 ),
 
-                // Green cube
-                Transform.translate(
-                  offset:
-                      Offset(maxSlide * (_animationController.value - 1), 0),
-                  child: Transform(
-                    transform: Matrix4.identity()
-                      ..setEntry(3, 2, 0.001)
-                      ..rotateY(math.pi / 2 * (1 - _animationController.value)),
-                    alignment: Alignment.centerRight,
-                    child: GestureDetector(
-                      child: greenBox,
+                // Green Box
+                Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.001)
+                    ..translate(
+                      -(height / 2) * math.sin(animation.value),
+                      0.0,
+                      -((height / 2) * math.cos(animation.value)),
+                    )
+                    ..rotateY(animation.value),
+                  child: Container(
+                    child: Center(
+                        child: GestureDetector(
+                      child: animation.value < (85 * math.pi / 180)
+                          ? greenBox
+                          : Container(),
                       onTap: onTap,
-                    ),
-                  ),
-                ),
-
-                // Blue cube
-                Transform.translate(
-                  offset: Offset(maxSlide * _animationController.value, 0),
-                  child: Transform(
-                    transform: Matrix4.identity()
-                      ..setEntry(3, 2, 0.001)
-                      ..rotateY(-math.pi / 2 * _animationController.value),
-                    alignment: Alignment.centerLeft,
-                    child: GestureDetector(
-                      child: blueBox,
-                      onTap: onTap,
-                    ),
+                    )),
                   ),
                 ),
               ],
